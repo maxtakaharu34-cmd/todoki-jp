@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#fffaf0" />
+<title>とどき</title>
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Mochiy+Pop+P+One&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+body {
+  font-family: "Kosugi Maru", system-ui, sans-serif;
+  color: #3a2a1c;
+  background:
+    radial-gradient(800px 500px at 30% 10%, rgba(255,200,140,0.5), transparent 70%),
+    radial-gradient(800px 500px at 70% 90%, rgba(180,220,255,0.5), transparent 70%),
+    linear-gradient(180deg, #fff8e8, #f0e8d8);
+  touch-action: manipulation; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app {
+  display: flex; flex-direction: column;
+  height: 100dvh; padding: 10px 14px; gap: 10px;
+  max-width: 480px; margin: 0 auto;
+}
+header { display: flex; justify-content: space-between; align-items: center; }
+.title {
+  font-family: "Mochiy Pop P One", sans-serif;
+  font-size: 22px; color: #ff6b35;
+  -webkit-text-stroke: 2.5px #fff; paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #3a2a1c;
+  margin: 0; transform: rotate(-2deg);
+}
+.tabs {
+  display: flex; gap: 6px; background: #fff; border: 2.5px solid #3a2a1c; border-radius: 999px;
+  padding: 4px; box-shadow: 2px 2px 0 #3a2a1c;
+}
+.tab {
+  flex: 1; padding: 8px 0;
+  background: transparent; border: 0; color: #3a2a1c;
+  font-family: "Mochiy Pop P One", sans-serif; font-size: 14px; cursor: pointer;
+  border-radius: 999px;
+}
+.tab.on { background: #ff6b35; color: #fff; }
+
+.panel { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 8px; }
+.panel.show { display: flex; }
+
+/* TODO */
+.input-row {
+  display: flex; gap: 6px;
+}
+.input-row input {
+  flex: 1; padding: 10px 12px; font-size: 15px; user-select: auto;
+  border: 2.5px solid #3a2a1c; border-radius: 12px;
+  background: #fff;
+  font-family: inherit;
+}
+.input-row button {
+  background: #ff6b35; color: #fff;
+  border: 2.5px solid #3a2a1c;
+  padding: 0 16px; border-radius: 12px;
+  font-family: "Mochiy Pop P One", sans-serif; font-size: 16px;
+  cursor: pointer; box-shadow: 2px 2px 0 #3a2a1c;
+}
+.input-row button:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #3a2a1c; }
+
+.list {
+  flex: 1; min-height: 0; overflow-y: auto;
+  background: #fff; border: 2.5px solid #3a2a1c; border-radius: 14px;
+  padding: 6px; box-shadow: 2px 2px 0 #3a2a1c;
+}
+.todo {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px; border-bottom: 1px solid rgba(58,42,28,0.1);
+  font-size: 14px;
+}
+.todo:last-child { border-bottom: 0; }
+.todo .check {
+  width: 22px; height: 22px; border: 2.5px solid #3a2a1c;
+  border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; flex-shrink: 0;
+}
+.todo.done .check { background: #4fb56a; }
+.todo.done .check::after { content: '✓'; color: #fff; font-weight: 900; }
+.todo .text { flex: 1; word-break: break-word; }
+.todo.done .text { text-decoration: line-through; opacity: 0.5; }
+.todo .del {
+  background: transparent; border: 0; color: #c0a090; cursor: pointer;
+  font-size: 16px; padding: 0 4px;
+}
+.todo .del:hover { color: #d93a1a; }
+.empty { padding: 30px 10px; text-align: center; opacity: 0.5; font-size: 13px; white-space: pre-line; }
+
+.summary {
+  display: flex; justify-content: space-between;
+  background: #fff7e0; border: 2px solid #3a2a1c; border-radius: 10px;
+  padding: 6px 10px; font-size: 11px;
+  box-shadow: 2px 2px 0 #3a2a1c;
+}
+.summary .v { font-family: "Mochiy Pop P One", sans-serif; font-size: 14px; color: #ff6b35; }
+
+/* Diary */
+.diary-input {
+  display: flex; gap: 6px;
+}
+.diary-input input {
+  flex: 1; padding: 10px 12px; font-size: 15px; user-select: auto;
+  border: 2.5px solid #3a2a1c; border-radius: 12px; background: #fff;
+  font-family: inherit;
+}
+.diary-input .mood-btn {
+  width: 44px; padding: 0; font-size: 22px;
+  background: #fff; border: 2.5px solid #3a2a1c; border-radius: 12px;
+  cursor: pointer;
+}
+.diary-input .mood-btn.on { background: #ffd56b; }
+.diary-input .save {
+  background: #4fb56a; color: #fff;
+  border: 2.5px solid #3a2a1c; padding: 0 14px;
+  border-radius: 12px; cursor: pointer;
+  font-family: "Mochiy Pop P One", sans-serif; font-size: 14px;
+  box-shadow: 2px 2px 0 #3a2a1c;
+}
+.diary-input .save:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #3a2a1c; }
+
+.diary-entry {
+  display: grid; grid-template-columns: 28px auto 1fr auto;
+  align-items: center; gap: 8px;
+  padding: 8px; border-bottom: 1px solid rgba(58,42,28,0.1);
+  font-size: 13px;
+}
+.diary-entry .em { font-size: 22px; line-height: 1; }
+.diary-entry .date {
+  font-family: "Mochiy Pop P One", sans-serif;
+  font-size: 11px; color: #ff6b35;
+  white-space: nowrap;
+}
+.diary-entry .text { word-break: break-word; line-height: 1.45; }
+.diary-entry:last-child { border-bottom: 0; }
+.diary-entry .del {
+  background: transparent; border: 0; color: #c0a090; cursor: pointer;
+  font-size: 16px; padding: 0 4px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1 class="title">とどき</h1>
+    <button id="btn-share" style="background:#fff;border:2.5px solid #3a2a1c;color:#3a2a1c;padding:5px 10px;border-radius:999px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:2px 2px 0 #3a2a1c;">🔗</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="todo">📋 TODO</button>
+    <button class="tab"    data-tab="diary">📖 1行日記</button>
+  </div>
+
+  <!-- TODO panel -->
+  <div class="panel show" data-panel="todo">
+    <div class="input-row">
+      <input type="text" id="todo-input" placeholder="やること を入力..." maxlength="80" />
+      <button id="todo-add">＋</button>
+    </div>
+    <div class="summary">
+      <div>のこり <span class="v" id="todo-left">0</span></div>
+      <div>かんりょう <span class="v" id="todo-done">0</span></div>
+      <div>ぜんぶ <span class="v" id="todo-all">0</span></div>
+    </div>
+    <div class="list" id="todo-list"></div>
+  </div>
+
+  <!-- Diary panel -->
+  <div class="panel" data-panel="diary">
+    <div class="diary-input">
+      <button class="mood-btn on" id="mood-btn" data-mood="🙂">🙂</button>
+      <input type="text" id="diary-input" placeholder="今日のひとこと..." maxlength="120" />
+      <button class="save" id="diary-save">📌</button>
+    </div>
+    <div class="summary">
+      <div>つづいて <span class="v" id="streak">0</span> 日</div>
+      <div>ぜんぶ <span class="v" id="diary-all">0</span> 件</div>
+    </div>
+    <div class="list" id="diary-list"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const KEY = 'todoki_v1';
+  const SHARE_URL = 'https://maxtakaharu34-cmd.github.io/todoki-jp/';
+  const $ = (id) => document.getElementById(id);
+  const todoInput = $('todo-input'), todoListEl = $('todo-list');
+  const todoLeft = $('todo-left'), todoDone = $('todo-done'), todoAll = $('todo-all');
+  const diaryInput = $('diary-input'), diaryListEl = $('diary-list');
+  const diaryAll = $('diary-all'), streakEl = $('streak');
+  const moodBtn = $('mood-btn');
+  const MOODS = ['🙂','😄','😢','😡','😴','😎','🥰','🥶','🤒','🌟'];
+  let moodIdx = 0;
+
+  const state = { todos: [], diary: [] };
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || '{}');
+    if (Array.isArray(s.todos)) state.todos = s.todos;
+    if (Array.isArray(s.diary)) state.diary = s.diary;
+  } catch {}
+  const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function renderTodos() {
+    while (todoListEl.firstChild) todoListEl.removeChild(todoListEl.firstChild);
+    if (state.todos.length === 0) {
+      const e = document.createElement('div'); e.className = 'empty';
+      e.textContent = 'やること、なし。\nゆっくりしてね 🍵';
+      todoListEl.appendChild(e);
+    } else {
+      // sort: undone first, then done
+      const arr = state.todos.slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+      for (const t of arr) {
+        const row = document.createElement('div');
+        row.className = 'todo' + (t.done ? ' done' : '');
+        const ck = document.createElement('div'); ck.className = 'check';
+        ck.addEventListener('click', () => { t.done = !t.done; save(); renderTodos(); });
+        const txt = document.createElement('div'); txt.className = 'text'; txt.textContent = t.text;
+        const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+        del.addEventListener('click', () => {
+          state.todos = state.todos.filter((x) => x.id !== t.id);
+          save(); renderTodos();
+        });
+        row.appendChild(ck); row.appendChild(txt); row.appendChild(del);
+        todoListEl.appendChild(row);
+      }
+    }
+    const left = state.todos.filter((t) => !t.done).length;
+    const done = state.todos.filter((t) => t.done).length;
+    todoLeft.textContent = left;
+    todoDone.textContent = done;
+    todoAll.textContent = state.todos.length;
+  }
+  function addTodo() {
+    const v = todoInput.value.trim();
+    if (!v) return;
+    state.todos.push({ id: Date.now(), text: v, done: false });
+    todoInput.value = '';
+    save(); renderTodos();
+  }
+  $('todo-add').addEventListener('click', addTodo);
+  todoInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTodo(); });
+
+  function calcStreak() {
+    if (state.diary.length === 0) return 0;
+    const dates = new Set(state.diary.map((d) => d.date));
+    let n = 0;
+    let d = new Date();
+    while (true) {
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (dates.has(ds)) { n++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return n;
+  }
+  function renderDiary() {
+    while (diaryListEl.firstChild) diaryListEl.removeChild(diaryListEl.firstChild);
+    if (state.diary.length === 0) {
+      const e = document.createElement('div'); e.className = 'empty';
+      e.textContent = '今日の一行を書いてみよう 📝';
+      diaryListEl.appendChild(e);
+    } else {
+      const arr = state.diary.slice().sort((a, b) =>
+        a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id
+      );
+      for (const e of arr) {
+        const row = document.createElement('div'); row.className = 'diary-entry';
+        const em = document.createElement('div'); em.className = 'em'; em.textContent = e.mood || '🙂';
+        const dt = document.createElement('div'); dt.className = 'date'; dt.textContent = e.date.slice(5).replace('-', '/');
+        const tx = document.createElement('div'); tx.className = 'text'; tx.textContent = e.text;
+        const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+        del.addEventListener('click', () => {
+          state.diary = state.diary.filter((x) => x.id !== e.id);
+          save(); renderDiary();
+        });
+        row.appendChild(em); row.appendChild(dt); row.appendChild(tx); row.appendChild(del);
+        diaryListEl.appendChild(row);
+      }
+    }
+    diaryAll.textContent = state.diary.length;
+    streakEl.textContent = calcStreak();
+  }
+  function addDiary() {
+    const v = diaryInput.value.trim();
+    if (!v) return;
+    state.diary.push({ id: Date.now(), text: v, date: todayStr(), mood: MOODS[moodIdx] });
+    diaryInput.value = '';
+    save(); renderDiary();
+  }
+  $('diary-save').addEventListener('click', addDiary);
+  diaryInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addDiary(); });
+  moodBtn.addEventListener('click', () => {
+    moodIdx = (moodIdx + 1) % MOODS.length;
+    moodBtn.textContent = MOODS[moodIdx];
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('on', x === t));
+      document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('show', p.dataset.panel === t.dataset.tab));
+    });
+  });
+
+  $('btn-share').addEventListener('click', () => {
+    const left = state.todos.filter((t) => !t.done).length;
+    const txt = `今日のTODO 残り ${left}件 / 日記 ${calcStreak()}日連続 #とどき`;
+    const url = `https://x.com/intent/post?text=${encodeURIComponent(txt)}&url=${encodeURIComponent(SHARE_URL)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  });
+
+  renderTodos();
+  renderDiary();
+})();
+</script>
+</body>
+</html>
